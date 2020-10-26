@@ -3,7 +3,7 @@
 # saves these lines to a new file called owid-covid-data-filtered.csv. 
 # You should use a regular expression for this. 
 # The filtered file should not contain the header line. 
-cat owid-covid-data.csv | grep '^...,' > owid-covid-data-filtered.csv
+cat owid-covid-data.csv | grep '^[a-zA-Z][a-zA-Z][a-zA-Z],' > owid-covid-data-filtered.csv
 
 # 2
 # count how many different ISO 3166-1 alpha-3 codes there are in the owid-covid-data-filtered.csv dataset
