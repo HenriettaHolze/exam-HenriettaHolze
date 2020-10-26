@@ -111,3 +111,73 @@ def read_data_3(filename):
 
     return covid_records_per_country
 
+
+# Part 3: Analyses 1 (25%)
+# ------------------------------------------------------
+# 1
+def get_weekly_per_100k_for_country_date(covid_data: dict, country_name: str, date: str):
+    '''takes a dict with covid data, a country name and a date,
+    returns estimated number of cases per week
+    '''
+    # check if entry is not empty, assumes that keys exist
+    assert covid_data[country_name][date]['new_cases_smoothed_per_million'] != ''
+
+    # find the relevant data entry with country name and date
+    new_cases_smoothed_per_million = covid_data[country_name][date]['new_cases_smoothed_per_million']
+    # estimate weekly cases and rescale to 100k
+    weekly_per_100k = float(new_cases_smoothed_per_million) * 7 / 10
+    return weekly_per_100k
+
+
+# 2
+def get_weekly_per_100k_for_country(covid_data: dict, country_name: str):
+    '''
+    returns list of dates and list of weekly-per-100k values for a country
+    '''
+    from datetime import datetime 
+
+    # create list with all dates available for that country in the dict
+    dates_in_dict = list(covid_data[country_name].keys())
+
+    dates = []
+    values = []
+    
+    for date in dates_in_dict:
+        # check if data is available for that country and date, if yes, append to lists and convert datetime
+        try:
+            values.append(get_weekly_per_100k_for_country_date(covid_data, country_name, date))
+            dates.append(datetime.strptime(date, "%Y-%m-%d"))
+        except Exception as e:
+            print(e)
+
+    return dates, values
+
+
+def plot_weekly_per_100k_for_country(covid_data: dict, country_name: str):
+    '''
+    plot weekly cases per 100k over time for country
+    '''
+
+    # get data
+    dates, values = get_weekly_per_100k_for_country(covid_data, country_name)
+
+    import matplotlib.pyplot as plt 
+    from matplotlib.dates import MonthLocator
+
+    # initiate plot
+    fig, ax = plt.subplots()
+
+    # create plot with data
+    ax.plot(dates, values)
+    # add horizontal dotted line for open-country limit
+    ax.axhline(y=20, linestyle='dotted')
+
+    # one tick per month and improve layout
+    ax.xaxis.set_major_locator(MonthLocator())
+    fig.autofmt_xdate()
+
+    # set ax titles and figure title 
+    ax.set(xlabel='time', ylabel='new weekly cases (per 100k)', title='Weekly cases per 100k for {}'.format(country_name))
+
+    # plt.show()
+
