@@ -181,3 +181,74 @@ def plot_weekly_per_100k_for_country(covid_data: dict, country_name: str):
 
     # plt.show()
 
+
+# should we raise the exception only if date & country not in dict (KeyError) or also or only for empty entries (ValueError)?
+# Is type checking ok?
+# question: should we convert entries to integers?
+# where import libraries? 
+# do we have to include wget datafile in unix part?
+
+
+# Part 4: Analyses 2 - pandas (25%)
+# ------------------------------------------------------
+# 1
+def read_into_dataframe(filename: str, countries: list = None):
+    '''
+    read date into pandas df and filter for correct country code and optionally a list of countries
+    '''
+    import pandas as pd 
+    df = pd.read_csv(filename)
+
+    import re
+    regex = '^[a-zA-Z][a-zA-Z][a-zA-Z]$'
+    pattern = re.compile(regex)
+
+    mask_iso = df['iso_code'].str.match(pattern)
+    mask_nan = ~pd.isna(df['iso_code'])
+
+    df_filtered = df[mask_iso & mask_nan]
+
+    # SettingWithCopyWarning: A value is trying to be set on a copy of a slice from a DataFrame.
+    df_filtered.loc[:, 'date'] = pd.to_datetime(df_filtered.loc[:, 'date'])
+
+    if countries != None:
+        df_filtered = df_filtered[df_filtered['location'].isin(countries)]
+
+    return df_filtered
+
+
+def get_weekly_per_100k(df):
+    '''
+    returns dataframe with weekly sum of cases
+    '''
+    import pandas as pd
+    import numpy as np 
+
+    # Change the index of the dataframe to be the date column
+    df = df.set_index('date')
+
+    # reduce the dataframe to only weekly entries, consisting of the average for that week, multiplied by 7 
+    df_resampled = df.groupby('location').resample('W').mean() * 7
+
+    # Reset the index on the resulting data frame to get back the date and location columns
+    df_resampled = df_resampled.reset_index()
+
+    # return a dataframe that only consists of three columns: location, date and weekly_new_cases_per_100k, 
+    # where the latter is based on the averaged new_cases_per_million column, but scaled to be per 100,000 
+    # instead of per million.
+    weekly_per_100k = df_resampled[['location', 'date']]
+
+    # SettingWithCopyWarning: A value is trying to be set on a copy of a slice from a DataFrame.
+    weekly_per_100k['weekly_new_cases_per_100k'] = df_resampled['new_cases_per_million'] / 10
+
+    return weekly_per_100k
+
+
+# 3
+def get_weekly_per_100k_country_vs_date(df):
+    '''
+    pivot dataframe so that rows are countries and columns are dates
+    '''
+    import pandas as pd
+    df_pivoted = pd.pivot_table(df, values='weekly_new_cases_per_100k', index=['location'], columns=['date'])
+    return df_pivoted
