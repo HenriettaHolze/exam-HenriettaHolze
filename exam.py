@@ -1,9 +1,6 @@
 # Part 2: Data preprocessing in Python (25%)
 # ------------------------------------------------------
 # 1
-# country name: column 3
-# date:         column 4
-# new_cases:    column 6 
 def read_data_1(filename):
     '''
     reads file, 
@@ -35,6 +32,7 @@ def read_data_1(filename):
     return covid_records_per_country
 
 
+# 2
 def read_data_2(filename):
     '''
     reads file, selects entries with valid ISO 3166-1 alpha-3 country code, 
@@ -49,7 +47,7 @@ def read_data_2(filename):
 
         # iterate over lines in csv
         for line in csvfile:
-            # define pattern to check for 3-letter country code
+            # define pattern to check for 3-letter country code: line starts with 3 letters, followed by a comma
             import re
             regex = '^[a-zA-Z][a-zA-Z][a-zA-Z],'
             pattern = re.compile(regex)
@@ -73,6 +71,7 @@ def read_data_2(filename):
     return covid_records_per_country
 
 
+# 3
 def read_data_3(filename):
     '''
     reads file, selects entries with valid ISO 3166-1 alpha-3 country code, 
@@ -87,7 +86,7 @@ def read_data_3(filename):
 
         # iterate over lines in csv
         for line in csvfile:
-            # define pattern to check for 3-letter country code
+            # define pattern to check for 3-letter country code: line starts with 3 letters, followed by a comma
             import re
             regex = '^[a-zA-Z][a-zA-Z][a-zA-Z],'
             pattern = re.compile(regex)
@@ -115,7 +114,7 @@ def read_data_3(filename):
 # Part 3: Analyses 1 (25%)
 # ------------------------------------------------------
 # 1
-def get_weekly_per_100k_for_country_date(covid_data: dict, country_name: str, date: str):
+def get_weekly_per_100k_for_country_date(covid_data, country_name, date):
     '''takes a dict with covid data, a country name and a date,
     returns estimated number of cases per week
     '''
@@ -130,7 +129,7 @@ def get_weekly_per_100k_for_country_date(covid_data: dict, country_name: str, da
 
 
 # 2
-def get_weekly_per_100k_for_country(covid_data: dict, country_name: str):
+def get_weekly_per_100k_for_country(covid_data, country_name):
     '''
     returns list of dates and list of weekly-per-100k values for a country
     '''
@@ -148,12 +147,14 @@ def get_weekly_per_100k_for_country(covid_data: dict, country_name: str):
             values.append(get_weekly_per_100k_for_country_date(covid_data, country_name, date))
             dates.append(datetime.strptime(date, "%Y-%m-%d"))
         except Exception as e:
-            print(e)
+            pass
+            # print(e)
 
     return dates, values
 
 
-def plot_weekly_per_100k_for_country(covid_data: dict, country_name: str):
+# 3
+def plot_weekly_per_100k_for_country(covid_data, country_name):
     '''
     plot weekly cases per 100k over time for country
     '''
@@ -182,30 +183,30 @@ def plot_weekly_per_100k_for_country(covid_data: dict, country_name: str):
     # plt.show()
 
 
-# should we raise the exception only if date & country not in dict (KeyError) or also or only for empty entries (ValueError)?
-# Is type checking ok?
-# question: should we convert entries to integers?
-# where import libraries? 
-# do we have to include wget datafile in unix part?
-
-
 # Part 4: Analyses 2 - pandas (25%)
 # ------------------------------------------------------
 # 1
-def read_into_dataframe(filename: str, countries: list = None):
+def read_into_dataframe(filename, countries=None):
     '''
     read date into pandas df and filter for correct country code and optionally a list of countries
     '''
     import pandas as pd 
     df = pd.read_csv(filename)
 
+    # define pattern to check for 3-letter country code: line starts with 3 letters, followed by a comma
     import re
     regex = '^[a-zA-Z][a-zA-Z][a-zA-Z]$'
     pattern = re.compile(regex)
 
+    # make 2 separate masks:
+    # mask_iso is False for all countries that have an entry in the iso_code column that is not conform with the ISO but has NAN if there is no entry at all
     mask_iso = df['iso_code'].str.match(pattern)
+    # mask_nan is needed to also mask the rows that have no entry in the iso_code column
     mask_nan = ~pd.isna(df['iso_code'])
+    # an easier way would be to check if the column is len() == 3 but that does not check whether it includes integers
+    # mask_length = df['iso_code'].str.len() == 3
 
+    # filter all rows that have the correct 3-letter country code
     df_filtered = df[mask_iso & mask_nan]
 
     # SettingWithCopyWarning: A value is trying to be set on a copy of a slice from a DataFrame.
@@ -217,6 +218,7 @@ def read_into_dataframe(filename: str, countries: list = None):
     return df_filtered
 
 
+# 2
 def get_weekly_per_100k(df):
     '''
     returns dataframe with weekly sum of cases
@@ -250,5 +252,17 @@ def get_weekly_per_100k_country_vs_date(df):
     pivot dataframe so that rows are countries and columns are dates
     '''
     import pandas as pd
+
+    # pivot dataframe: values inside the table are weekly_new_cases_per_100k, 
+    # columns are dates and rows are country names
     df_pivoted = pd.pivot_table(df, values='weekly_new_cases_per_100k', index=['location'], columns=['date'])
     return df_pivoted
+
+
+# should we raise the exception only if date & country not in dict (KeyError) or also or only for empty entries (ValueError)?
+# is assert enough or should we make own Exception class? 
+# how to catch exception in 3.2?
+# should we convert entries to integers in df?
+# where import libraries? 
+# do we have to include wget datafile in unix part?
+# pandas warnings !!!
