@@ -1,3 +1,11 @@
+import pandas as pd
+import re
+from datetime import datetime 
+import matplotlib.pyplot as plt 
+from matplotlib.dates import MonthLocator
+import numpy as np 
+
+
 # Part 2: Data preprocessing in Python (25%)
 # ------------------------------------------------------
 # 1
@@ -48,7 +56,6 @@ def read_data_2(filename):
         # iterate over lines in csv
         for line in csvfile:
             # define pattern to check for 3-letter country code: line starts with 3 letters, followed by a comma
-            import re
             regex = '^[a-zA-Z][a-zA-Z][a-zA-Z],'
             pattern = re.compile(regex)
 
@@ -87,7 +94,6 @@ def read_data_3(filename):
         # iterate over lines in csv
         for line in csvfile:
             # define pattern to check for 3-letter country code: line starts with 3 letters, followed by a comma
-            import re
             regex = '^[a-zA-Z][a-zA-Z][a-zA-Z],'
             pattern = re.compile(regex)
 
@@ -133,8 +139,6 @@ def get_weekly_per_100k_for_country(covid_data, country_name):
     '''
     returns list of dates and list of weekly-per-100k values for a country
     '''
-    from datetime import datetime 
-
     # create list with all dates available for that country in the dict
     dates_in_dict = list(covid_data[country_name].keys())
 
@@ -162,9 +166,6 @@ def plot_weekly_per_100k_for_country(covid_data, country_name):
     # get data
     dates, values = get_weekly_per_100k_for_country(covid_data, country_name)
 
-    import matplotlib.pyplot as plt 
-    from matplotlib.dates import MonthLocator
-
     # initiate plot
     fig, ax = plt.subplots()
 
@@ -190,11 +191,9 @@ def read_into_dataframe(filename, countries=None):
     '''
     read date into pandas df and filter for correct country code and optionally a list of countries
     '''
-    import pandas as pd 
     df = pd.read_csv(filename)
 
     # define pattern to check for 3-letter country code: line starts with 3 letters, followed by a comma
-    import re
     regex = '^[a-zA-Z][a-zA-Z][a-zA-Z]$'
     pattern = re.compile(regex)
 
@@ -223,9 +222,6 @@ def get_weekly_per_100k(df):
     '''
     returns dataframe with weekly sum of cases
     '''
-    import pandas as pd
-    import numpy as np 
-
     # Change the index of the dataframe to be the date column
     df = df.set_index('date')
 
@@ -251,7 +247,6 @@ def get_weekly_per_100k_country_vs_date(df):
     '''
     pivot dataframe so that rows are countries and columns are dates
     '''
-    import pandas as pd
 
     # pivot dataframe: values inside the table are weekly_new_cases_per_100k, 
     # columns are dates and rows are country names
