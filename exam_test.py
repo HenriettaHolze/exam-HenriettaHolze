@@ -1,13 +1,20 @@
+import exam
+import matplotlib
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
 # Part 2: Data preprocessing in Python (25%)
 # ------------------------------------------------------
 # 1
-import exam
 covid_dict_1 = exam.read_data_1('owid-covid-data.csv')
 # print(len(covid_dict_1.keys()))
+# 213
 
 # 2
 covid_dict_2 = exam.read_data_2('owid-covid-data.csv')
 # print(len(covid_dict_2.keys()))
+# 210
 
 # 3
 covid_dict_3 = exam.read_data_3('owid-covid-data.csv')
@@ -18,18 +25,18 @@ print(covid_dict_3['Denmark']['2020-10-10']['new_cases'])
 # ------------------------------------------------------
 # 1
 print(exam.get_weekly_per_100k_for_country_date(covid_dict_3, "Czech Republic", '2020-10-20'))
+# 565.3291
 # print(exam.get_weekly_per_100k_for_country_date(covid_dict_3, "Aruba", '2020-03-13'))
-# No data available for Aruba for 2020-03-13
-# None
+# AssertionError
+# print(exam.get_weekly_per_100k_for_country_date(covid_dict_3, "CountryThatDoesNotExist", '2020-03-13'))
+# KeyError: 'CountryThatDoesNotExist'
 
 # 2
 dates, values = exam.get_weekly_per_100k_for_country(covid_dict_3, "Czech Republic")
-# print(exam.get_weekly_per_100k_for_country(covid_dict_3, "Czech Republic"))
 # print('dates', dates)
 # print('values', values)
 
 # 3
-import matplotlib.pyplot as plt
 exam.plot_weekly_per_100k_for_country(covid_dict_3, "Czech Republic")
 plt.savefig('weekly_cases_cze.png')
 
@@ -55,9 +62,6 @@ weekly_per_100k = exam.get_weekly_per_100k(df_selected_countries)
 # 3
 country_vs_date = exam.get_weekly_per_100k_country_vs_date(weekly_per_100k)
 
-import matplotlib
-import numpy as np
-import pandas as pd
 fig, ax = plt.subplots()
 x_vals = matplotlib.dates.date2num(pd.to_datetime(country_vs_date.columns))
 aspect_ratio = (country_vs_date.shape[1] /
