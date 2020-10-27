@@ -20,14 +20,13 @@ cat owid-covid-data-filtered.csv | grep -o -E '[0-9]+-[0-9]+' | sort | uniq
 # 4
 # 10 country names (not the country codes) for which the total number of deaths was highest on Oct 10, 2020, sorted with highest first.
 # grep lines with relevant date
-# sort numeric according to total deaths, this way all empty lines will be on top
-# get 1o lines with highest count
-# reverse sort 
+# sort numeric according to total_deaths in reverse order: highest numbers will be on top
 # cut column with country name
-grep '2020-10-10' owid-covid-data-filtered.csv | sort -t',' -k8,8 -n | tail | sort -t',' -k8,8 -nr | cut -d',' -f3
+# head: get 10 lines with highest count
+grep '2020-10-10' owid-covid-data-filtered.csv | sort -t',' -k8,8 -nr | cut -d',' -f3 | head
 
 # 5
 # 10 country names (not the country codes) for which the total number of deaths per million was highest on Oct 10, 2020, 
 # sorted with highest first. Notice how the ordering changes.
-# do the same as in 4 but on column 14 
-grep '2020-10-10' owid-covid-data-filtered.csv | sort -t',' -k14,14 -n | tail | sort -t',' -k14,14 -nr | cut -d',' -f3
+# do the same as in 4 but on column 14 (total_deaths_per_million)
+grep '2020-10-10' owid-covid-data-filtered.csv | sort -t',' -k14,14 -nr | cut -d',' -f3 | head
