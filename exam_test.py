@@ -8,18 +8,13 @@ import matplotlib.pyplot as plt
 # ------------------------------------------------------
 # 1
 covid_dict_1 = exam.read_data_1('owid-covid-data.csv')
-# print(len(covid_dict_1.keys()))
-# 213
 
 # 2
 covid_dict_2 = exam.read_data_2('owid-covid-data.csv')
-# print(len(covid_dict_2.keys()))
-# 210
 
 # 3
 covid_dict_3 = exam.read_data_3('owid-covid-data.csv')
 print(covid_dict_3['Denmark']['2020-10-10']['new_cases'])
-# 482.0
 
 # Part 3: Analyses 1 (25%)
 # ------------------------------------------------------
@@ -27,7 +22,7 @@ print(covid_dict_3['Denmark']['2020-10-10']['new_cases'])
 print(exam.get_weekly_per_100k_for_country_date(covid_dict_3, "Czech Republic", '2020-10-20'))
 # 565.3291
 # print(exam.get_weekly_per_100k_for_country_date(covid_dict_3, "Aruba", '2020-03-13'))
-# AssertionError
+# Exception: No data available for Aruba for 2020-03-13 for new_cases_smoothed_per_million
 # print(exam.get_weekly_per_100k_for_country_date(covid_dict_3, "CountryThatDoesNotExist", '2020-03-13'))
 # KeyError: 'CountryThatDoesNotExist'
 
