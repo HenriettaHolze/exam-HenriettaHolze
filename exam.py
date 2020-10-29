@@ -3,8 +3,6 @@ import re
 from datetime import datetime 
 import matplotlib.pyplot as plt 
 from matplotlib.dates import MonthLocator
-import numpy as np 
-
 
 # Part 2: Data preprocessing in Python (25%)
 # ------------------------------------------------------
@@ -124,8 +122,11 @@ def get_weekly_per_100k_for_country_date(covid_data, country_name, date):
     '''takes a dict with covid data, a country name and a date,
     returns estimated number of cases per week
     '''
-    # check if entry is not empty, assumes that keys exist
-    assert covid_data[country_name][date]['new_cases_smoothed_per_million'] != ''
+    # check if entry is not empty, assumes that keys (country and date) exist
+    # assert covid_data[country_name][date]['new_cases_smoothed_per_million'] != ''
+
+    if covid_data[country_name][date]['new_cases_smoothed_per_million'] == '':
+        raise Exception('No data available for {} for {} for new_cases_smoothed_per_million'.format(country_name, date))
 
     # find the relevant data entry with country name and date
     new_cases_smoothed_per_million = covid_data[country_name][date]['new_cases_smoothed_per_million']
@@ -151,8 +152,8 @@ def get_weekly_per_100k_for_country(covid_data, country_name):
             values.append(get_weekly_per_100k_for_country_date(covid_data, country_name, date))
             dates.append(datetime.strptime(date, "%Y-%m-%d"))
         except Exception as e:
-            pass
-            # print(e)
+            print(e)
+            # pass
 
     return dates, values
 
@@ -175,6 +176,7 @@ def plot_weekly_per_100k_for_country(covid_data, country_name):
     ax.axhline(y=20, linestyle='dotted')
 
     # one tick per month and improve layout
+    ax.xaxis_date()
     ax.xaxis.set_major_locator(MonthLocator())
     fig.autofmt_xdate()
 
@@ -199,20 +201,23 @@ def read_into_dataframe(filename, countries=None):
 
     # make 2 separate masks:
     # mask_iso is False for all countries that have an entry in the iso_code column that is not conform with the ISO but has NAN if there is no entry at all
-    mask_iso = df['iso_code'].str.match(pattern)
+    mask_iso = df.loc[:, 'iso_code'].str.match(pattern)
     # mask_nan is needed to also mask the rows that have no entry in the iso_code column
-    mask_nan = ~pd.isna(df['iso_code'])
+    mask_nan = ~pd.isna(df.loc[:, 'iso_code'])
+
     # an easier way would be to check if the column is len() == 3 but that does not check whether it includes integers
     # mask_length = df['iso_code'].str.len() == 3
 
     # filter all rows that have the correct 3-letter country code
-    df_filtered = df[mask_iso & mask_nan]
+    df_filtered = df.loc[mask_iso & mask_nan].copy()
+    # df_filtered = df.loc[mask_length]
 
-    # SettingWithCopyWarning: A value is trying to be set on a copy of a slice from a DataFrame.
-    df_filtered.loc[:, 'date'] = pd.to_datetime(df_filtered.loc[:, 'date'])
+    # convert dates to datetime format
+    df_filtered.loc[:, 'date'] = pd.to_datetime(df_filtered['date'])
 
+    # filter countries if specified
     if countries != None:
-        df_filtered = df_filtered[df_filtered['location'].isin(countries)]
+        df_filtered = df_filtered.loc[df_filtered['location'].isin(countries), :]
 
     return df_filtered
 
@@ -234,10 +239,10 @@ def get_weekly_per_100k(df):
     # return a dataframe that only consists of three columns: location, date and weekly_new_cases_per_100k, 
     # where the latter is based on the averaged new_cases_per_million column, but scaled to be per 100,000 
     # instead of per million.
-    weekly_per_100k = df_resampled[['location', 'date']]
+    weekly_per_100k = df_resampled.loc[:, ['location', 'date']]
 
     # SettingWithCopyWarning: A value is trying to be set on a copy of a slice from a DataFrame.
-    weekly_per_100k['weekly_new_cases_per_100k'] = df_resampled['new_cases_per_million'] / 10
+    weekly_per_100k.loc[:, 'weekly_new_cases_per_100k'] = df_resampled.loc[:, 'new_cases_per_million'] / 10
 
     return weekly_per_100k
 
@@ -252,12 +257,3 @@ def get_weekly_per_100k_country_vs_date(df):
     # columns are dates and rows are country names
     df_pivoted = pd.pivot_table(df, values='weekly_new_cases_per_100k', index=['location'], columns=['date'])
     return df_pivoted
-
-
-# should we raise the exception only if date & country not in dict (KeyError) or also or only for empty entries (ValueError)?
-# is assert enough or should we make own Exception class? 
-# how to catch exception in 3.2?
-# should we convert entries to integers in df?
-# where import libraries? 
-# do we have to include wget datafile in unix part?
-# pandas warnings !!!
